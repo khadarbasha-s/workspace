@@ -3,14 +3,14 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FiCode } from 'react-icons/fi';
 
-interface ContentItem {
+export interface ContentItem {
   title: string;
   description: string;
   code: string;
   explanation: string;
 }
 
-type ModuleContent = string | ContentItem;
+export type ModuleContent = string | ContentItem;
 
 interface ModuleType {
   id: string;
@@ -120,32 +120,17 @@ const ModuleText = styled.div<{ active?: boolean }>`
   font-size: 0.9rem;
 `;
 
-const StatusBadge = styled.span<{ status: 'not-started' | 'in-progress' | 'completed' }>`
+const StatusBadge = styled.span<{ $status: 'not-started' | 'in-progress' | 'completed' }>`
   font-size: 0.7rem;
   font-weight: 500;
   padding: 0.2rem 0.5rem;
-  border-radius: 12px;
+  border-radius: 9999px;
+  margin-left: 0.5rem;
   text-transform: capitalize;
-  background-color: ${props => {
-    switch (props.status) {
-      case 'completed':
-        return '#ecfdf5';
-      case 'in-progress':
-        return '#fffbeb';
-      default:
-        return '#f3f4f6';
-    }
-  }};
-  color: ${props => {
-    switch (props.status) {
-      case 'completed':
-        return '#047857';
-      case 'in-progress':
-        return '#b45309';
-      default:
-        return '#6b7280';
-    }
-  }};
+  background-color: ${({ $status }) => 
+    $status === 'completed' ? '#10b981' : 
+    $status === 'in-progress' ? '#f59e0b' : '#e5e7eb'};
+  color: ${({ $status }) => $status === 'not-started' ? '#4b5563' : 'white'};
 `;
 
 const ProgressButton = styled(motion.button)`
@@ -168,7 +153,6 @@ const ProgressButton = styled(motion.button)`
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
   }
 `;
-
 
 const SidebarModules: React.FC<SidebarModulesProps> = ({
   activeModule,
@@ -217,7 +201,7 @@ const SidebarModules: React.FC<SidebarModulesProps> = ({
                 }}>
                   {module.duration} • {module.exercises} exercises
                 </span>
-                <StatusBadge status={module.status}>
+                <StatusBadge $status={module.status}>
                   {module.status === 'in-progress' ? 'In Progress' : module.status}
                 </StatusBadge>
               </div>

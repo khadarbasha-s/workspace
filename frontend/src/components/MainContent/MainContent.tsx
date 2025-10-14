@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, Suspense } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FiPlay, FiCode, FiClock, FiAward, FiCalendar, FiX, FiTerminal } from 'react-icons/fi';
-import type { ModuleType } from '../SidebarModules';
+import { type ModuleType, type ModuleContent } from '../SidebarModules';
 import HelpTooltip from '../HelpTooltip';
 import { Terminal as XTerminal } from 'xterm';
 import type { ITerminalOptions } from 'xterm';
@@ -16,7 +16,7 @@ const MonacoEditor = React.lazy(() => import('@monaco-editor/react'));
 interface ExtendedModuleType extends Omit<ModuleType, 'status'> {
   duration: string;
   exercises: number;
-  content: string[];
+  content: ModuleContent[];
   snippet: string;
   status: 'not-started' | 'in-progress' | 'completed';
 }
@@ -217,8 +217,6 @@ const EditorContent = styled.div`
   flex-direction: column;
 `;
 
-// Removed unused TerminalContent component
-
 const CloseButton = styled.button`
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.25);
@@ -302,6 +300,7 @@ const MainContent: React.FC<MainContentProps> = ({
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
   }, [module, autoScroll]);
+
   const [terminal, setTerminal] = useState<XTerminal | null>(null);
   const fitAddon = useRef<FitAddon>(new FitAddon());
 
@@ -534,48 +533,137 @@ const MainContent: React.FC<MainContentProps> = ({
             What You'll Learn
           </h2>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {module.content?.map((item: string, index: number) => (
-              <div 
-                key={index}
-                onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
-                  const target = e.currentTarget;
-                  target.style.transform = 'translateY(-2px)';
-                  target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
-                  const target = e.currentTarget;
-                  target.style.transform = '';
-                  target.style.boxShadow = '';
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.75rem',
-                  padding: '1rem',
-                  backgroundColor: '#F9FAFB',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #E5E7EB',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <div style={{
-                  flexShrink: 0,
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: '#10B981',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600'
-                }}>
-                  {index + 1}
-                </div>
-                <p style={{ margin: 0, color: '#4B5563', lineHeight: '1.6' }}>{item}</p>
-              </div>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {module.content?.map((item, index) => {
+              if (typeof item === 'string') {
+                return (
+                  <div 
+                    key={index}
+                    onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                      const target = e.currentTarget;
+                      target.style.transform = 'translateY(-2px)';
+                      target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                      const target = e.currentTarget;
+                      target.style.transform = '';
+                      target.style.boxShadow = '';
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem',
+                      padding: '1rem',
+                      backgroundColor: '#F9FAFB',
+                      borderRadius: '0.5rem',
+                      border: '1px solid #E5E7EB',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{
+                      flexShrink: 0,
+                      width: '24px',
+                      height: '24px',
+                      backgroundColor: '#10B981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}>
+                      {index + 1}
+                    </div>
+                    <p style={{ margin: 0, color: '#4B5563', lineHeight: '1.6' }}>{item}</p>
+                  </div>
+                );
+              } else {
+                // Handle ContentItem type
+                return (
+                  <div 
+                    key={index}
+                    style={{
+                      backgroundColor: '#F9FAFB',
+                      borderRadius: '0.5rem',
+                      border: '1px solid #E5E7EB',
+                      overflow: 'hidden',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div 
+                      onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                        const target = e.currentTarget;
+                        target.style.transform = 'translateY(-2px)';
+                        target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                      }}
+                      onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                        const target = e.currentTarget;
+                        target.style.transform = '';
+                        target.style.boxShadow = '';
+                      }}
+                      style={{
+                        padding: '1rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onClick={() => handleSnippetClick(item.code)}
+                    >
+                      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                        <div style={{
+                          flexShrink: 0,
+                          width: '24px',
+                          height: '24px',
+                          backgroundColor: '#3B82F6',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
+                          borderRadius: '4px'
+                        }}>
+                          {index + 1}
+                        </div>
+                        <h3 style={{ 
+                          margin: 0, 
+                          color: '#1F2937', 
+                          fontWeight: '600',
+                          fontSize: '1rem'
+                        }}>
+                          {item.title}
+                        </h3>
+                      </div>
+                      <p style={{ 
+                        margin: '0.5rem 0 0 0', 
+                        color: '#4B5563', 
+                        lineHeight: '1.6',
+                        fontSize: '0.9375rem',
+                        paddingLeft: 'calc(24px + 0.75rem)'
+                      }}>
+                        {item.description}
+                      </p>
+                    </div>
+                    {item.code && (
+                      <pre style={{
+                        margin: 0,
+                        padding: '1rem',
+                        backgroundColor: '#1E293B',
+                        color: '#E2E8F0',
+                        fontSize: '0.875rem',
+                        lineHeight: '1.5',
+                        borderTop: '1px solid #334155',
+                        overflowX: 'auto',
+                        fontFamily: '"Fira Code", monospace',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word'
+                      }}>
+                        <code>{item.code}</code>
+                      </pre>
+                    )}
+                  </div>
+                );
+              }
+            })}
           </div>
         </div>
       </div>
@@ -608,7 +696,7 @@ const MainContent: React.FC<MainContentProps> = ({
 
   return (
     <ContentContainer ref={contentRef} autoScroll={autoScroll}>
-<div style={{ 
+      <div style={{ 
         position: 'fixed', 
         top: '1rem', 
         right: '1.5rem',
