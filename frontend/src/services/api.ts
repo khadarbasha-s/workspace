@@ -30,13 +30,18 @@ interface PaginatedResponse<T> {
   results: T[];
 }
 
-const API_BASE_URL = "https://fuzzy-eureka-697q5gx56rvp359jv-8000.app.github.dev/api";
+const API_BASE_URL = "http://127.0.0.1:8000/api"
 
 export const api = {
   getModules: async (): Promise<ModuleType[]> => {
     try {
       console.log('Fetching modules from:', `${API_BASE_URL}/modules/`);
-      const response = await fetch(`${API_BASE_URL}/modules/`);
+      const response = await fetch(`${API_BASE_URL}/modules/`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
