@@ -30,7 +30,7 @@ interface PaginatedResponse<T> {
   results: T[];
 }
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = "https://fuzzy-eureka-697q5gx56rvp359jv-8000.app.github.dev/api";
 
 export const api = {
   getModules: async (): Promise<ModuleType[]> => {
