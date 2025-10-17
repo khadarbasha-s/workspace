@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import type { DragEvent, ChangeEvent } from 'react';
+import type { FC, DragEvent, ChangeEvent } from 'react';
 
-const FileUpload = () => {
+interface FileUploadProps {
+  onUploadSuccess: () => void;
+}
+
+const FileUpload: FC<FileUploadProps> = ({ onUploadSuccess }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -9,6 +13,10 @@ const FileUpload = () => {
     type: null, 
     message: '' 
   });
+
+  // Add a default empty function if onUploadSuccess is not provided
+  const handleUploadSuccess = onUploadSuccess || (() => {});
+  
 
   // Handle file selection via input
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -43,51 +51,54 @@ const FileUpload = () => {
   };
 
   // Handle file upload to backend
- const handleUpload = async () => {
-  if (selectedFiles.length === 0) {
-    setUploadStatus({
-      type: 'error',
-      message: 'Please select at least one file to upload.'
-    });
-    return;
-  }
-
-  setIsUploading(true);
-  setUploadStatus({ type: null, message: '' });
-
-  try {
-    const formData = new FormData();
-    selectedFiles.forEach((file) => {
-      formData.append('file', file);
-    });
-
-    const response = await fetch('http://localhost:8000/api/upload/', {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Upload failed');
+  const handleUpload = async () => {
+    if (selectedFiles.length === 0) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Please select at least one file to upload.'
+      });
+      return;
     }
 
-    const result = await response.json();
-    setUploadStatus({
-      type: 'success',
-      message: result.message || 'File uploaded successfully!'
-    });
-    setSelectedFiles([]);
-    
-  } catch (error) {
-    console.error('Upload error:', error);
-    setUploadStatus({
-      type: 'error',
-      message: error instanceof Error ? error.message : 'Upload failed. Please try again.'
-    });
-  } finally {
-    setIsUploading(false);
-  }
-};
+    setIsUploading(true);
+    setUploadStatus({ type: null, message: '' });
+
+    try {
+      const formData = new FormData();
+      selectedFiles.forEach((file) => {
+        formData.append('file', file);
+      });
+
+      const response = await fetch('http://localhost:8000/api/upload/', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const result = await response.json();
+      setUploadStatus({
+        type: 'success',
+        message: result.message || 'File uploaded successfully!'
+      });
+      setSelectedFiles([]);
+      
+      // Call the success callback after successful upload
+      handleUploadSuccess();
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Upload failed. Please try again.'
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Format file size
   const formatFileSize = (bytes: number): string => {
